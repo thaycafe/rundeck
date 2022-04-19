@@ -1,0 +1,54 @@
+- defaultTab: nodes
+  description: ''
+  executionEnabled: true
+  id: 73b822c2-4507-4608-9e55-4c36d7517258
+  loglevel: INFO
+  name: Criação de Usuário
+  nodeFilterEditable: false
+  nodefilters:
+    dispatch:
+      excludePrecedence: true
+      keepgoing: false
+      rankOrder: ascending
+      successOnEmptyNodeFilter: false
+      threadcount: '5'
+    filter: .*
+  nodesSelectedByDefault: true
+  options:
+  - name: user
+    required: true
+  - name: key
+    regex: 'ssh-rsa AAAA[0-9A-Za-z+/]+[=]{0,3} ([^@]+@[^@]+)'
+    required: true
+  plugins:
+    ExecutionLifecycle: null
+  scheduleEnabled: true
+  sequence:
+    commands:
+    - errorhandler:
+        exec: getent passwd ${option.user}
+        keepgoingOnSuccess: true
+      exec: sudo useradd -m -d /home/${option.user} -s /bin/bash ${option.user}
+    - fileExtension: .sh
+      interpreterArgsQuoted: false
+      script: |-
+        #!/bin/bash
+
+        su -c 'mkdir -p ~/.ssh' @option.user@
+
+        grep "@option.key@" /home/@option.user@/.ssh/authorized_keys > /dev/null
+
+        if [ $? != 0 ]; then
+            su -c 'echo "@option.key@" >> ~/.ssh/authorized_keys' @option.user@
+            echo 'Chave adicionada'
+        else
+            echo 'Chave já existe'
+        fi
+
+
+        echo '@option.user@ ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/@option.user@
+      scriptInterpreter: sudo bash
+    keepgoing: false
+    strategy: node-first
+  uuid: 73b822c2-4507-4608-9e55-4c36d7517258
+

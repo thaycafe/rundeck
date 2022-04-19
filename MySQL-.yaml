@@ -1,0 +1,49 @@
+- defaultTab: nodes
+  description: ''
+  executionEnabled: true
+  id: 61e4304f-e55f-4742-a82c-112ef193971a
+  loglevel: INFO
+  name: MySQL
+  nodeFilterEditable: false
+  nodefilters:
+    dispatch:
+      excludePrecedence: true
+      keepgoing: false
+      rankOrder: ascending
+      successOnEmptyNodeFilter: false
+      threadcount: '1'
+    filter: 172.27.11.30
+  nodesSelectedByDefault: true
+  notification:
+    onfailure:
+      plugin:
+        configuration:
+          botAuthToken: 1796511625:AAG3wxBWnf5_jA3yz7W43utMfMbP82ZOFRg
+          chatId: '-532240768'
+          includeJobLog: 'true'
+          telegramApiBaseUrl: https://api.telegram.org
+          telegramProperties: /etc/rundeck/telegram.properties
+          templateDir: /var/lib/rundeck/templates
+          templateMessage: |-
+            ${job.project}: ${job.name}
+            Status: ${status} (${context.job.execid})
+        type: TelegramNotification
+  notifyAvgDurationThreshold: null
+  plugins:
+    ExecutionLifecycle: null
+  scheduleEnabled: true
+  sequence:
+    commands:
+    - fileExtension: .sh
+      interpreterArgsQuoted: false
+      script: "#!/bin/bash\n\n\nsource /etc/os-release # ID = centos,debian, NAME\n\
+        \nfunction _debian {\n\tdpkg -l | grep mariadb-server > /dev/null\n\ttest\
+        \ $? -eq 0 && return\n\tapt-get update && apt-get install -y --simulate mariadb-server\n\
+        }\n\nfunction _centos {\n\trpm -qa | grep mariadb-server > /dev/null\n\ttest\
+        \ $? -eq 0 && return\n\tdnf install -y mariadb-server\n\tsystemctl start mariadb\n\
+        \tsystemctl enable mariadb\n}\n\n_$ID \n"
+      scriptInterpreter: sudo bash
+    keepgoing: false
+    strategy: node-first
+  uuid: 61e4304f-e55f-4742-a82c-112ef193971a
+
